@@ -99,6 +99,38 @@ def inject_anomaly(event: dict) -> dict:
     return event
 
 
+def publish_event(event: dict) -> None:
+    """
+    Publish a telemetry event to Redpanda.
+    """
+
+    producer.produce(
+        settings.kafka_topic,
+        json.dumps(event).encode("utf-8")
+    )
+
+    producer.flush()
+    
+    
+def create_anomaly_event() -> dict:
+    """
+    Create a guaranteed anomalous event.
+    """
+
+    vehicle_id = random.choice(VEHICLES)
+
+    return {
+        "vehicle_id": vehicle_id,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "latitude": 48.8566,
+        "longitude": 2.3522,
+        "speed": 160.0,
+        "temperature": 14.0,
+        "fuel_level": 5.0
+    }
+
+
+
 def main() -> None:
     """
     Publish telemetry continuously.
@@ -110,12 +142,7 @@ def main() -> None:
 
         event = inject_anomaly(event)
 
-        producer.produce(
-            settings.kafka_topic,
-            json.dumps(event).encode("utf-8")
-        )
-
-        producer.flush()
+        publish_event(event)
 
         print(
             f"Published: {event['vehicle_id']} "

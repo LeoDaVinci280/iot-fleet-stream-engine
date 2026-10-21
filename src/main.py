@@ -12,6 +12,11 @@ from src.database import Alert
 from src.database import Telemetry
 from src.database import get_db
 
+from src.producer import (
+    create_anomaly_event,
+    publish_event,
+)
+
 
 app = FastAPI(
     title="IoT Fleet Stream Engine",
@@ -86,4 +91,19 @@ def get_alerts(
         .all()
     )
     
+    
+@app.post("/api/inject-anomaly")
+def inject_anomaly():
+    """
+    Publish a telemetry anomaly event.
+    """
+
+    event = create_anomaly_event()
+
+    publish_event(event)
+
+    return {
+        "status": "published",
+        "vehicle_id": event["vehicle_id"]
+    }
     

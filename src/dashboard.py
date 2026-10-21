@@ -7,7 +7,7 @@ import requests
 import streamlit as st
 import plotly.express as px
 from streamlit_autorefresh import st_autorefresh
-
+import time 
 
 API_URL = "http://localhost:8000"
 
@@ -88,6 +88,14 @@ def load_alerts() -> pd.DataFrame:
 telemetry_df = load_telemetry()
 alerts_df = load_alerts()
 
+if "selected_vehicle" not in st.session_state:
+
+    st.session_state.selected_vehicle = (
+        sorted(
+            telemetry_df["vehicle_id"].unique()
+        )[0]
+    )
+
 alert_count = len(alerts_df)    
 
 alerts_df["timestamp"] = pd.to_datetime(
@@ -159,12 +167,19 @@ st.plotly_chart(
 
 
 
+vehicle_list = sorted(
+    telemetry_df["vehicle_id"].unique()
+)
+
 selected_vehicle = st.selectbox(
     "Select Vehicle",
-    sorted(
-        telemetry_df["vehicle_id"].unique()
+    vehicle_list,
+    index=vehicle_list.index(
+        st.session_state.selected_vehicle
     )
 )
+
+st.session_state.selected_vehicle = selected_vehicle
 
 st.subheader("🌡️ Temperature Evolution")
 
@@ -241,7 +256,23 @@ if st.button(
     "⚠️ Inject Anomaly",
     type="primary"
 ):
-    st.info(
-        "Anomaly injection API will be added "
-        "in the next step."
+
+    response = requests.post(
+        f"{API_URL}/api/inject-anomaly"
     )
+
+    response.raise_for_status()
+
+    vehicle = response.json()["vehicle_id"]
+
+    st.session_state.selected_vehicle = vehicle
+
+    st.toast(
+        f"🚨 Anomaly injected for {vehicle}"
+    )
+
+    time.sleep(4)
+
+    st.cache_data.clear()
+
+    st.rerun()
