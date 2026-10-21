@@ -2,12 +2,13 @@
 Database configuration and ORM models.
 """
 
-from datetime import datetime
+from datetime import datetime, UTC
 
 from sqlalchemy import (
     Column,
     DateTime,
     Float,
+    Index,
     Integer,
     String,
     create_engine,
@@ -36,12 +37,15 @@ class Telemetry(Base):
     """
 
     __tablename__ = "telemetry"
+    __table_args__ = (
+        Index("idx_telemetry_vehicle", "vehicle_id"),
+    )
 
     id = Column(Integer, primary_key=True)
 
     timestamp = Column(
         DateTime,
-        default=datetime.utcnow,
+        default=lambda: datetime.now(UTC),
         nullable=False
     )
 
@@ -66,12 +70,15 @@ class Alert(Base):
     """
 
     __tablename__ = "alerts"
+    __table_args__ = (
+        Index("idx_alert_vehicle", "vehicle_id"),
+    )
 
     id = Column(Integer, primary_key=True)
 
     timestamp = Column(
         DateTime,
-        default=datetime.utcnow,
+        default=lambda: datetime.now(UTC),
         nullable=False
     )
 
