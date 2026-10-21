@@ -6,9 +6,11 @@ psycopg2-binary
 
 confluent-kafka
 
+faker
 streamlit
 plotly
 pandas
+numpy
 
 websockets
 
