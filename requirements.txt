@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+
+sqlalchemy
+psycopg2-binary
+
+confluent-kafka
+
+streamlit
+plotly
+pandas
+
+websockets
+
+python-dotenv
+
