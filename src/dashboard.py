@@ -252,27 +252,112 @@ else:
 
 st.divider()
 
-if st.button(
-    "⚠️ Inject Anomaly",
-    type="primary"
-):
+st.subheader("⚡ Anomaly Injection")
 
-    response = requests.post(
-        f"{API_URL}/api/inject-anomaly"
-    )
+col1, col2, col3, col4 = st.columns(4)
 
-    response.raise_for_status()
 
-    vehicle = response.json()["vehicle_id"]
+with col1:
 
-    st.session_state.selected_vehicle = vehicle
+    if st.button(
+        "💥 Full Incident",
+        use_container_width=True
+    ):
 
-    st.toast(
-        f"🚨 Anomaly injected for {vehicle}"
-    )
+        response = requests.post(
+            f"{API_URL}/api/inject-anomaly/full"
+        )
 
-    time.sleep(4)
+        response.raise_for_status()
 
-    st.cache_data.clear()
+        vehicle = response.json()["vehicle_id"]
 
-    st.rerun()
+        st.session_state.selected_vehicle = vehicle
+
+        st.toast(
+            f"💥 Full incident injected for {vehicle}"
+        )
+
+        time.sleep(4)
+
+        st.cache_data.clear()
+
+        st.rerun()
+        
+        
+with col2:
+
+    if st.button(
+        "🌡️ High Temperature",
+        use_container_width=True
+    ):
+
+        response = requests.post(
+            f"{API_URL}/api/inject-anomaly/temperature"
+        )
+
+        vehicle = response.json()["vehicle_id"]
+
+        st.session_state.selected_vehicle = vehicle
+
+        st.toast(
+            f"🌡️ Temperature anomaly injected for {vehicle}"
+        )
+
+        time.sleep(4)
+
+        st.cache_data.clear()
+
+        st.rerun()
+        
+with col3:
+
+    if st.button(
+        "⛽ Low Fuel",
+        use_container_width=True
+    ):
+
+        response = requests.post(
+            f"{API_URL}/api/inject-anomaly/fuel"
+        )
+
+        vehicle = response.json()["vehicle_id"]
+
+        st.session_state.selected_vehicle = vehicle
+
+        st.toast(
+            f"⛽ Fuel anomaly injected for {vehicle}"
+        )
+
+        time.sleep(4)
+
+        st.cache_data.clear()
+
+        st.rerun()
+        
+with col4:
+
+    if st.button(
+        "🚨 Overspeed",
+        use_container_width=True
+    ):
+
+        response = requests.post(
+            f"{API_URL}/api/inject-anomaly/overspeed"
+        )
+
+        vehicle = response.json()["vehicle_id"]
+
+        st.session_state.selected_vehicle = vehicle
+
+        st.toast(
+            f"🚨 Overspeed anomaly injected for {vehicle}"
+        )
+
+        time.sleep(4)
+
+        st.cache_data.clear()
+
+        st.rerun()
+        
+

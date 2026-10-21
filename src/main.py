@@ -13,7 +13,10 @@ from src.database import Telemetry
 from src.database import get_db
 
 from src.producer import (
-    create_anomaly_event,
+    create_temperature_anomaly,
+    create_fuel_anomaly,
+    create_overspeed_anomaly,
+    create_full_incident,
     publish_event,
 )
 
@@ -92,18 +95,68 @@ def get_alerts(
     )
     
     
-@app.post("/api/inject-anomaly")
-def inject_anomaly():
+@app.post("/api/inject-anomaly/temperature")
+def inject_temperature_anomaly():
     """
-    Publish a telemetry anomaly event.
+    Inject a temperature anomaly.
     """
 
-    event = create_anomaly_event()
+    event = create_temperature_anomaly()
 
     publish_event(event)
 
     return {
         "status": "published",
+        "type": "temperature",
         "vehicle_id": event["vehicle_id"]
     }
     
+    
+@app.post("/api/inject-anomaly/fuel")
+def inject_fuel_anomaly():
+    """
+    Inject a fuel anomaly.
+    """
+    event = create_fuel_anomaly()
+
+    publish_event(event)
+
+    return {
+        "status": "published",
+        "type": "fuel",
+        "vehicle_id": event["vehicle_id"]
+    }
+    
+    
+@app.post("/api/inject-anomaly/overspeed")
+def inject_overspeed_anomaly():
+    """
+    Inject an overspeed anomaly.
+    """
+
+    event = create_overspeed_anomaly()
+
+    publish_event(event)
+
+    return {
+        "status": "published",
+        "type": "overspeed",
+        "vehicle_id": event["vehicle_id"]
+    }
+
+
+@app.post("/api/inject-anomaly/full")
+def inject_full_incident():
+    """
+    Publish a full anomaly event.
+    """
+
+    event = create_full_incident()
+
+    publish_event(event)
+
+    return {
+        "status": "published",
+        "type": "full",
+        "vehicle_id": event["vehicle_id"]
+    }

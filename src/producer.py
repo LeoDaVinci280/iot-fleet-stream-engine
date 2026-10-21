@@ -112,9 +112,9 @@ def publish_event(event: dict) -> None:
     producer.flush()
     
     
-def create_anomaly_event() -> dict:
+def create_temperature_anomaly() -> dict:
     """
-    Create a guaranteed anomalous event.
+    Create a temperature anomaly event.
     """
 
     vehicle_id = random.choice(VEHICLES)
@@ -124,11 +124,64 @@ def create_anomaly_event() -> dict:
         "timestamp": datetime.now(UTC).isoformat(),
         "latitude": 48.8566,
         "longitude": 2.3522,
-        "speed": 160.0,
+        "speed": 80.0,
         "temperature": 14.0,
-        "fuel_level": 5.0
+        "fuel_level": 60.0
+    }
+    
+    
+def create_fuel_anomaly() -> dict:
+    """
+    Create a low fuel anomaly event.
+    """
+
+    vehicle_id = random.choice(VEHICLES)
+
+    return {
+        "vehicle_id": vehicle_id,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "latitude": 48.8566,
+        "longitude": 2.3522,
+        "speed": 70.0,
+        "temperature": 5.0,
+        "fuel_level": 4.0
     }
 
+
+def create_overspeed_anomaly() -> dict:
+    """
+    Create an overspeed anomaly event.
+    """
+
+    vehicle_id = random.choice(VEHICLES)
+
+    return {
+        "vehicle_id": vehicle_id,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "latitude": 48.8566,
+        "longitude": 2.3522,
+        "speed": 165.0,
+        "temperature": 5.0,
+        "fuel_level": 70.0
+    }
+    
+
+def create_full_incident() -> dict:
+    """
+    Create an event triggering all anomaly rules.
+    """
+
+    vehicle_id = random.choice(VEHICLES)
+
+    return {
+        "vehicle_id": vehicle_id,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "latitude": 48.8566,
+        "longitude": 2.3522,
+        "speed": 165.0,
+        "temperature": 14.0,
+        "fuel_level": 4.0
+    }
 
 
 def main() -> None:
