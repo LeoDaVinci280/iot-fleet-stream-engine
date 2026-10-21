@@ -7,7 +7,7 @@ import requests
 import streamlit as st
 import plotly.express as px
 from streamlit_autorefresh import st_autorefresh
-import time 
+import time
 
 API_URL = "http://localhost:8000"
 
@@ -53,7 +53,7 @@ st.title("🚚 IoT Fleet Stream Engine")
 st.caption(
     "Real-time fleet monitoring powered by "
     "Redpanda, TimescaleDB and FastAPI. "
-    f"Last refresh: {pd.Timestamp.now().strftime('%H:%M:%S')}"
+    f"Last refresh: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M:%S')} (Europe/Paris)"
 )
 
 @st.cache_data(ttl=5)
@@ -100,6 +100,12 @@ alert_count = len(alerts_df)
 
 alerts_df["timestamp"] = pd.to_datetime(
     alerts_df["timestamp"]
+)
+
+alerts_df["timestamp"] = (
+    alerts_df["timestamp"]
+    .dt.tz_localize("UTC")
+    .dt.tz_convert("Europe/Paris")
 )
 
 col1, col2, col3, col4 = st.columns(4)
@@ -220,6 +226,11 @@ if not alerts_df.empty:
             ascending=False
         )
         .head(20)
+    )
+    
+    display_alerts["timestamp"] = (
+        display_alerts["timestamp"]
+        .dt.strftime("%d/%m/%Y %H:%M:%S")
     )
     
     display_alerts = display_alerts[
