@@ -16,6 +16,7 @@ from sqlalchemy import (
 
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 
 from src.config import settings
 
@@ -101,3 +102,16 @@ def create_tables() -> None:
     """
 
     Base.metadata.create_all(bind=engine)
+    
+
+def get_db():
+    """
+    Database session dependency.
+    """
+
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
