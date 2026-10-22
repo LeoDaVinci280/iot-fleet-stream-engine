@@ -7,6 +7,7 @@ Provides REST endpoints for telemetry and alerts.
 from fastapi import Depends
 from fastapi import FastAPI
 from sqlalchemy.orm import Session
+import asyncio
 
 from src.database import Alert
 from src.database import Telemetry
@@ -19,6 +20,12 @@ from src.producer import (
     create_full_incident,
     publish_event,
 )
+
+from fastapi import WebSocket
+from fastapi import WebSocketDisconnect
+
+from src.websocket_manager import manager
+
 
 
 app = FastAPI(
@@ -159,4 +166,45 @@ def inject_full_incident():
         "status": "published",
         "type": "full",
         "vehicle_id": event["vehicle_id"]
+    }
+    
+    
+@app.websocket("/ws/alerts")
+async def websocket_alerts(
+    websocket: WebSocket
+):
+    """
+    Alert WebSocket endpoint.
+    """
+
+    await manager.connect(websocket)
+    print("WEBSOCKET CONNECTED")
+
+    try:
+
+        while True:
+
+            await websocket.receive_text()
+
+    except WebSocketDisconnect:
+
+        print("WEBSOCKET DISCONNECTED")
+        manager.disconnect(websocket)
+        
+         
+        
+        
+@app.post("/api/alerts/broadcast")
+async def broadcast_alert(
+    payload: dict
+):
+    print("BROADCAST ENDPOINT CALLED")
+    print(payload)
+
+    await manager.broadcast(payload)
+
+    print("BROADCAST SENT")
+
+    return {
+        "status": "sent"
     }

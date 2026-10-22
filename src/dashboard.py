@@ -9,6 +9,8 @@ import plotly.express as px
 from streamlit_autorefresh import st_autorefresh
 import time
 
+from ws_client import start_websocket
+
 API_URL = "http://localhost:8000"
 
 st.set_page_config(
@@ -17,7 +19,55 @@ st.set_page_config(
     layout="wide"
 )
 
+start_websocket()
+import json
+from pathlib import Path
+
+alert_file = Path("last_ws_alert.json")
+
+# if alert_file.exists():
+
+#     try:
+
+#         realtime_alert = json.loads(
+#             alert_file.read_text(
+#                 encoding="utf-8"
+#             )
+#         )
+
+#         st.warning(
+#             f"⚡ Last Real-Time Alert: "
+#             f"{realtime_alert['vehicle_id']} | "
+#             f"{realtime_alert['alert_type']} | "
+#             f"{realtime_alert['alert_value']}"
+#         )
+
+#     except Exception:
+#         pass
+
 with st.sidebar:
+    
+    st.subheader("📡 Live Alert")
+    
+    if alert_file.exists():
+
+        try:
+
+            realtime_alert = json.loads(
+                alert_file.read_text(
+                    encoding="utf-8"
+                )
+            )
+
+            st.error(
+                f"{realtime_alert['vehicle_id']}\n\n"
+                f"{realtime_alert['alert_type']}"
+            )
+
+        except Exception:
+            st.info("No alert received")
+        
+    st.markdown("---")
 
     st.subheader("⚙️ Dashboard")
 
@@ -168,7 +218,7 @@ fig_map = px.scatter_map(
 
 st.plotly_chart(
     fig_map,
-    use_container_width=True
+    width="stretch"
 )
 
 
@@ -212,7 +262,7 @@ fig_temp = px.line(
 
 st.plotly_chart(
     fig_temp,
-    use_container_width=True
+    width="stretch"
 )
 
 st.subheader("🚨 Latest Alerts")
@@ -251,7 +301,7 @@ if not alerts_df.empty:
 
     st.dataframe(
         display_alerts,
-        use_container_width=True,
+        width="stretch",
         hide_index=True
     )
 
@@ -272,7 +322,7 @@ with col1:
 
     if st.button(
         "💥 Full Incident",
-        use_container_width=True
+        width="stretch"
     ):
 
         response = requests.post(
@@ -300,7 +350,7 @@ with col2:
 
     if st.button(
         "🌡️ High Temperature",
-        use_container_width=True
+        width="stretch"
     ):
 
         response = requests.post(
@@ -325,7 +375,7 @@ with col3:
 
     if st.button(
         "⛽ Low Fuel",
-        use_container_width=True
+        width="stretch"
     ):
 
         response = requests.post(
@@ -350,7 +400,7 @@ with col4:
 
     if st.button(
         "🚨 Overspeed",
-        use_container_width=True
+        width="stretch"
     ):
 
         response = requests.post(

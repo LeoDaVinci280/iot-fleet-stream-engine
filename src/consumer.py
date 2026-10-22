@@ -13,6 +13,8 @@ from confluent_kafka import Consumer
 from src.config import settings
 from src.database import Alert, SessionLocal, Telemetry
 
+import requests
+
 consumer = Consumer(
     {
         "bootstrap.servers": settings.kafka_broker,
@@ -24,11 +26,44 @@ consumer = Consumer(
 consumer.subscribe([settings.kafka_topic])
 
 
+def broadcast_alert(
+    vehicle_id: str,
+    alert_type: str,
+    alert_value: float
+) -> None:
+    print("BROADCAST FUNCTION CALLED")
+    print(
+        f"BROADCASTING {alert_type} "
+        f"for {vehicle_id}"
+    )
+
+    try:
+
+        response = requests.post(
+            "http://127.0.0.1:8000/api/alerts/broadcast",
+            json={
+                "vehicle_id": vehicle_id,
+                "alert_type": alert_type,
+                "alert_value": alert_value,
+            },
+            timeout=2,
+        )
+
+        print(response.status_code)
+        print(response.text)
+
+    except Exception as exc:
+
+        print(
+            f"WebSocket broadcast failed: {exc}"
+        )
+
+
 def detect_anomalies(session, event: dict) -> None:
     """
     Detect telemetry anomalies and create alerts.
     """
-
+    print("DETECT ANOMALIES CALLED")
     alerts = []
 
     if event["temperature"] > 8:
@@ -54,6 +89,12 @@ def detect_anomalies(session, event: dict) -> None:
                 alert_type=alert_type,
                 alert_value=value,
             )
+        )
+        
+        broadcast_alert(
+            vehicle_id=event["vehicle_id"],
+            alert_type=alert_type,
+            alert_value=value,
         )
 
         print(
