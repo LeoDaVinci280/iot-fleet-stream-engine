@@ -42,17 +42,17 @@ class Telemetry(Base):
         Index("idx_telemetry_vehicle", "vehicle_id"),
     )
 
-    id = Column(Integer, primary_key=True)
-
     timestamp = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
-        nullable=False
+        nullable=False,
+        primary_key=True
     )
 
     vehicle_id = Column(
         String(50),
-        nullable=False
+        nullable=False,
+        primary_key=True
     )
 
     latitude = Column(Float)

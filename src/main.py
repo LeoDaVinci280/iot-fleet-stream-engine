@@ -19,6 +19,7 @@ from src.producer import (
     create_overspeed_anomaly,
     create_full_incident,
     publish_event,
+    VEHICLES
 )
 
 from fastapi import WebSocket
@@ -208,3 +209,9 @@ async def broadcast_alert(
     return {
         "status": "sent"
     }
+    
+    
+@app.get("/api/vehicles")
+def get_vehicles():
+
+    return sorted(VEHICLES)

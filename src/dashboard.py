@@ -25,26 +25,6 @@ from pathlib import Path
 
 alert_file = Path("last_ws_alert.json")
 
-# if alert_file.exists():
-
-#     try:
-
-#         realtime_alert = json.loads(
-#             alert_file.read_text(
-#                 encoding="utf-8"
-#             )
-#         )
-
-#         st.warning(
-#             f"⚡ Last Real-Time Alert: "
-#             f"{realtime_alert['vehicle_id']} | "
-#             f"{realtime_alert['alert_type']} | "
-#             f"{realtime_alert['alert_value']}"
-#         )
-
-#     except Exception:
-#         pass
-
 with st.sidebar:
     
     st.subheader("📡 Live Alert")
@@ -135,16 +115,36 @@ def load_alerts() -> pd.DataFrame:
 
     return pd.DataFrame(response.json())
 
+
+@st.cache_data(ttl=60)
+def load_vehicles():
+
+    response = requests.get(
+        f"{API_URL}/api/vehicles"
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
 telemetry_df = load_telemetry()
 alerts_df = load_alerts()
+vehicle_list = sorted(load_vehicles())
 
-if "selected_vehicle" not in st.session_state:
+if telemetry_df.empty:
 
-    st.session_state.selected_vehicle = (
-        sorted(
-            telemetry_df["vehicle_id"].unique()
-        )[0]
+    st.warning(
+        "Waiting for telemetry data..."
     )
+    st.stop()
+
+if ("selected_vehicle" not in st.session_state and vehicle_list):
+    st.session_state.selected_vehicle = vehicle_list[0]
+    
+    
+if "target_vehicle" not in st.session_state:
+    st.session_state.target_vehicle = None
 
 alert_count = len(alerts_df)    
 
@@ -222,11 +222,23 @@ st.plotly_chart(
 )
 
 
+if st.session_state.target_vehicle in vehicle_list:
 
-vehicle_list = sorted(
-    telemetry_df["vehicle_id"].unique()
-)
+    st.session_state.selected_vehicle = (
+        st.session_state.target_vehicle
+    )
 
+    st.session_state.target_vehicle = None
+
+elif (
+    st.session_state.selected_vehicle
+    not in vehicle_list
+):
+    st.session_state.selected_vehicle = (
+        vehicle_list[0]
+    )
+    
+           
 selected_vehicle = st.selectbox(
     "Select Vehicle",
     vehicle_list,
@@ -236,6 +248,7 @@ selected_vehicle = st.selectbox(
 )
 
 st.session_state.selected_vehicle = selected_vehicle
+
 
 st.subheader("🌡️ Temperature Evolution")
 
@@ -253,17 +266,26 @@ vehicle_df = (
     .tail(50)
 )
 
-fig_temp = px.line(
-    vehicle_df.sort_values("timestamp"),
-    x="timestamp",
-    y="temperature",
-    title=f"Temperature History - {selected_vehicle}"
-)
+if vehicle_df.empty:
 
-st.plotly_chart(
-    fig_temp,
-    width="stretch"
-)
+    st.info(
+        f"No telemetry available yet for "
+        f"{selected_vehicle}"
+    )
+
+else:
+
+    fig_temp = px.line(
+        vehicle_df.sort_values("timestamp"),
+        x="timestamp",
+        y="temperature",
+        title=f"Temperature History - {selected_vehicle}"
+    )
+
+    st.plotly_chart(
+        fig_temp,
+        width="stretch"
+    )
 
 st.subheader("🚨 Latest Alerts")
 
@@ -333,7 +355,7 @@ with col1:
 
         vehicle = response.json()["vehicle_id"]
 
-        st.session_state.selected_vehicle = vehicle
+        st.session_state.target_vehicle = vehicle
 
         st.toast(
             f"💥 Full incident injected for {vehicle}"
@@ -359,7 +381,7 @@ with col2:
 
         vehicle = response.json()["vehicle_id"]
 
-        st.session_state.selected_vehicle = vehicle
+        st.session_state.target_vehicle = vehicle
 
         st.toast(
             f"🌡️ Temperature anomaly injected for {vehicle}"
@@ -384,7 +406,7 @@ with col3:
 
         vehicle = response.json()["vehicle_id"]
 
-        st.session_state.selected_vehicle = vehicle
+        st.session_state.target_vehicle = vehicle
 
         st.toast(
             f"⛽ Fuel anomaly injected for {vehicle}"
@@ -409,7 +431,7 @@ with col4:
 
         vehicle = response.json()["vehicle_id"]
 
-        st.session_state.selected_vehicle = vehicle
+        st.session_state.target_vehicle = vehicle
 
         st.toast(
             f"🚨 Overspeed anomaly injected for {vehicle}"
